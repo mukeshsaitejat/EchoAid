@@ -63,14 +63,16 @@ EchoAid/
 13. Add `.gitignore` and `.env.example`.
 
 ### Acceptance Criteria
-- [ ] Backend starts without errors.
-- [ ] Homepage loads through FastAPI at `http://localhost:8000`.
-- [ ] Static assets (CSS, JS) are served correctly.
-- [ ] `/health` endpoint returns `{"status": "ok"}`.
-- [ ] Database initializes idempotently.
-- [ ] Application shell is responsive (desktop, tablet, mobile).
-- [ ] No real API keys or secrets are committed.
-- [ ] Setup instructions in README are accurate.
+- [x] Backend starts without errors.
+- [x] Homepage loads through FastAPI at `http://localhost:8000`.
+- [x] Static assets (CSS, JS) are served correctly.
+- [x] `/health` endpoint returns `{"status": "ok"}`.
+- [x] Database initializes idempotently.
+- [x] Application shell is responsive (desktop, tablet, mobile).
+- [x] No real API keys or secrets are committed.
+- [x] Setup instructions in README are accurate.
+
+**Phase 1 complete — 15/15 tests passing.**
 
 ---
 
