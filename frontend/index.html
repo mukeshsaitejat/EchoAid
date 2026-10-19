@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+        content="EchoAid — a personalized communication assistant for people with speech difficulties." />
+  <title>EchoAid — Communication Assistant</title>
+
+  <!-- Google Fonts: Space Mono (Monotonic) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/static/css/tokens.css" />
+  <link rel="stylesheet" href="/static/css/base.css" />
+  <link rel="stylesheet" href="/static/css/components.css" />
+  <link rel="stylesheet" href="/static/css/layout.css" />
+</head>
+<body>
+
+<!-- ── Screen-reader live region ──────────────────────────────────── -->
+<div id="sr-announcer" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+<!-- ── Site Header ────────────────────────────────────────────────── -->
+<header class="site-header" role="banner">
+  <div class="site-header__inner">
+
+    <!-- Logo -->
+    <a href="/" class="logo" aria-label="EchoAid home">
+      <div class="logo__mark" aria-hidden="true">
+        <!-- Sound-wave SVG mark -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2v20M8 6v12M4 9v6M16 6v12M20 9v6"/>
+        </svg>
+      </div>
+      <span class="logo__wordmark">Echo<span>Aid</span></span>
+    </a>
+
+    <!-- Health status indicator -->
+    <div id="health-indicator"
+         class="flex items-center gap-2"
+         aria-label="Backend status"
+         title="Backend status">
+      <span class="status-dot status-dot--loading" aria-hidden="true"></span>
+      <span class="status-label text-xs text-secondary hide-mobile">checking…</span>
+    </div>
+
+  </div>
+</header>
+
+<!-- ── Main Content ───────────────────────────────────────────────── -->
+<main class="page-main page-main--centered" id="main-content" role="main">
+  <div class="container container-md">
+
+    <!-- Hero -->
+    <section class="text-center mb-8" aria-labelledby="hero-heading">
+      <h1 id="hero-heading" class="text-3xl mb-4">
+        Your voice,<br/>
+        <span style="color: var(--color-primary);">your words.</span>
+      </h1>
+      <p class="text-md text-secondary" style="max-width: 46ch; margin: 0 auto;">
+        EchoAid helps you communicate with confidence using personalized
+        keywords, saved phrases, and text-to-speech.
+      </p>
+    </section>
+
+    <!-- Mode selector cards -->
+    <section aria-labelledby="mode-heading">
+      <h2 id="mode-heading" class="sr-only">Choose your mode</h2>
+
+      <div class="flex flex-wrap justify-center gap-8 mt-8">
+
+        <!-- Patient Mode -->
+        <a href="/patient"
+           class="mode-card mode-card--patient"
+           aria-describedby="patient-card-desc">
+          <div class="mode-card__icon" aria-hidden="true">🗣️</div>
+          <div class="mode-card__title">Patient Mode</div>
+          <p id="patient-card-desc" class="mode-card__description">
+            Communicate using your saved keywords and phrases.
+            Large buttons, text-to-speech, and instant access.
+          </p>
+          <div class="mode-card__cta" aria-hidden="true">
+            Enter Patient Mode →
+          </div>
+        </a>
+
+        <!-- Guardian Mode -->
+        <a href="/guardian"
+           class="mode-card mode-card--guardian"
+           aria-describedby="guardian-card-desc">
+          <div class="mode-card__icon" aria-hidden="true">⚙️</div>
+          <div class="mode-card__title">Guardian Mode</div>
+          <p id="guardian-card-desc" class="mode-card__description">
+            Manage keywords, phrases, and communication preferences
+            on behalf of the patient.
+          </p>
+          <div class="mode-card__cta" aria-hidden="true">
+            Enter Guardian Mode →
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Phase-progress notice -->
+    <div class="alert alert-info mt-10"
+         role="note"
+         aria-label="Development status">
+      <span aria-hidden="true">🔧</span>
+      <span>
+        <strong>Phase 1 — Foundation.</strong>
+        The interface shell and backend are ready.
+        Full keyword management and speech features arrive in the next phases.
+      </span>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── Footer ─────────────────────────────────────────────────────── -->
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <span>© 2026 EchoAid — Communication Assistant</span>
+    <span class="flex items-center gap-2">
+      <span class="status-dot status-dot--loading" aria-hidden="true"
+            id="footer-status-dot"></span>
+      <span id="footer-status-label" class="text-xs">Phase 1</span>
+    </span>
+  </div>
+</footer>
+
+<!-- ── Scripts ────────────────────────────────────────────────────── -->
+<script src="/static/js/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    window.EchoAid.checkHealth().then(data => {
+      const footerDot   = document.getElementById('footer-status-dot');
+      const footerLabel = document.getElementById('footer-status-label');
+      if (data) {
+        if (footerDot)   footerDot.className = 'status-dot status-dot--ok';
+        if (footerLabel) footerLabel.textContent = `v${data.version} · ${data.environment}`;
+      } else {
+        if (footerDot)   footerDot.className = 'status-dot status-dot--error';
+        if (footerLabel) footerLabel.textContent = 'backend offline';
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

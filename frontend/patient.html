@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+        content="EchoAid Patient Mode — communicate using saved keywords and text-to-speech." />
+  <title>EchoAid — Patient Mode</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet" />
+
+  <link rel="stylesheet" href="/static/css/tokens.css" />
+  <link rel="stylesheet" href="/static/css/base.css" />
+  <link rel="stylesheet" href="/static/css/components.css" />
+  <link rel="stylesheet" href="/static/css/layout.css" />
+
+  <style>
+    /* Patient Mode specific overrides */
+    body { background-color: var(--color-bg); }
+
+    .patient-layout {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: calc(100vh - var(--header-height));
+    }
+
+    .patient-toolbar {
+      background-color: var(--color-surface);
+      border-bottom: 1.5px solid var(--color-border);
+      padding: var(--space-4) 0;
+    }
+
+    .patient-content {
+      padding: var(--space-6) 0;
+    }
+
+    .speech-panel {
+      background-color: var(--color-surface);
+      border-top: 1.5px solid var(--color-border);
+      padding: var(--space-4) 0;
+      position: sticky;
+      bottom: 0;
+      z-index: var(--z-raised);
+    }
+
+    .speech-display {
+      min-height: 64px;
+      padding: var(--space-4) var(--space-5);
+      background-color: var(--color-bg);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-base);
+      font-size: var(--font-size-lg);
+      color: var(--color-text-primary);
+      font-family: var(--font-family);
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .speech-display--empty {
+      color: var(--color-text-tertiary);
+      font-style: italic;
+    }
+
+    .speech-controls {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    /* Coming-soon overlay for Phase 1 */
+    .phase-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-6);
+      padding: var(--space-16) var(--space-6);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Screen-reader announcer -->
+<div id="sr-announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
+
+<!-- ── Site Header ───────────────────────────────────────────────── -->
+<header class="site-header" role="banner">
+  <div class="site-header__inner">
+
+    <a href="/" class="logo" aria-label="EchoAid home">
+      <div class="logo__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2v20M8 6v12M4 9v6M16 6v12M20 9v6"/>
+        </svg>
+      </div>
+      <span class="logo__wordmark">Echo<span>Aid</span></span>
+    </a>
+
+    <nav class="site-header__nav" aria-label="Patient Mode navigation">
+      <span class="badge badge-primary">Patient Mode</span>
+      <a href="/guardian" class="btn btn-ghost btn-sm hide-mobile"
+         aria-label="Switch to Guardian Mode">
+        Guardian ⚙️
+      </a>
+    </nav>
+
+  </div>
+</header>
+
+<!-- ── Main Content ──────────────────────────────────────────────── -->
+<main id="main-content" role="main">
+  <div class="patient-layout">
+
+    <!-- Category navigation toolbar -->
+    <div class="patient-toolbar" role="navigation" aria-label="Category filter">
+      <div class="container">
+        <div class="pill-tabs" role="tablist" aria-label="Keyword categories" id="category-tabs">
+          <!-- Populated by Phase 3 JS. Placeholder for Phase 1: -->
+          <button class="pill-tab active" role="tab" aria-selected="true" data-category="all">
+            All
+          </button>
+          <button class="pill-tab" role="tab" aria-selected="false" data-category="urgent">
+            🚨 Urgent
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyword grid -->
+    <section class="patient-content" aria-labelledby="keywords-heading">
+      <div class="container">
+        <h2 id="keywords-heading" class="sr-only">Communication Keywords</h2>
+
+        <!-- Phase 1 placeholder -->
+        <div class="phase-placeholder" id="keyword-area">
+          <div class="empty-state__icon" aria-hidden="true">🗣️</div>
+          <h3 class="empty-state__title">Patient Mode</h3>
+          <p class="empty-state__body text-secondary">
+            Your keyword cards will appear here in Phase 3.<br/>
+            Guardian Mode (Phase 2) is where you add and manage keywords.
+          </p>
+          <div class="flex gap-4 flex-wrap justify-center mt-4">
+            <!-- Sample keyword card previews (static, non-functional) -->
+            <div class="keyword-card" style="min-width:140px;" aria-hidden="true">
+              <span class="keyword-card__icon">💧</span>
+              <span class="keyword-card__label">Water</span>
+            </div>
+            <div class="keyword-card" style="min-width:140px;" aria-hidden="true">
+              <span class="keyword-card__icon">😴</span>
+              <span class="keyword-card__label">Tired</span>
+            </div>
+            <div class="keyword-card keyword-card--urgent" style="min-width:140px;" aria-hidden="true">
+              <span class="keyword-card__icon">🆘</span>
+              <span class="keyword-card__label">Help</span>
+            </div>
+            <div class="keyword-card" style="min-width:140px;" aria-hidden="true">
+              <span class="keyword-card__icon">🌡️</span>
+              <span class="keyword-card__label">Pain</span>
+            </div>
+          </div>
+          <div class="alert alert-info mt-6" style="max-width: 480px;" role="note">
+            <span aria-hidden="true">🔧</span>
+            <span>
+              <strong>Phase 1 — Foundation.</strong>
+              These cards are design previews.
+              Full TTS and keyword loading arrive in Phase 3.
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Speech panel -->
+    <div class="speech-panel" role="region" aria-label="Speech controls">
+      <div class="container">
+        <div class="flex gap-4 items-center flex-wrap">
+
+          <div class="speech-display speech-display--empty"
+               id="speech-display"
+               aria-label="Selected message"
+               aria-live="polite">
+            Select a keyword to see its message here…
+          </div>
+
+          <div class="speech-controls">
+            <button class="btn btn-primary btn-lg"
+                    id="btn-speak"
+                    aria-label="Speak selected message"
+                    disabled>
+              🔊 Speak
+            </button>
+            <button class="btn btn-secondary"
+                    id="btn-stop"
+                    aria-label="Stop speaking"
+                    disabled>
+              ⏹ Stop
+            </button>
+            <button class="btn btn-ghost"
+                    id="btn-repeat"
+                    aria-label="Repeat last message"
+                    disabled>
+              🔁 Repeat
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── Scripts ───────────────────────────────────────────────────── -->
+<script src="/static/js/app.js"></script>
+<script src="/static/js/patient.js"></script>
+
+</body>
+</html>
