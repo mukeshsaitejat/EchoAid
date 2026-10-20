@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EchoAid Test Page</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 40px;
+      background: #f8fafc;
+    }
+    .status { padding: 20px; background: white; border: 2px solid #2563eb; border-radius: 8px; }
+    .pass { color: #16a34a; }
+    .fail { color: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="status">
+    <h1>EchoAid Server Test</h1>
+    <p id="result">Testing backend connection...</p>
+  </div>
+  
+  <script>
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('result').innerHTML = 
+          '<span class="pass">✓ Backend is working!</span><br>' +
+          '<pre>' + JSON.stringify(data, null, 2) + '</pre>' +
+          '<br><a href="/" style="color:#2563eb;">→ Go to EchoAid Home</a>';
+      })
+      .catch(err => {
+        document.getElementById('result').innerHTML = 
+          '<span class="fail">✗ Connection failed: ' + err.message + '</span>';
+      });
+  </script>
+</body>
+</html>

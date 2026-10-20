@@ -18,25 +18,21 @@
   <link rel="stylesheet" href="/static/css/layout.css" />
 
   <style>
+    /* ── Guardian layout ─────────────────────────────────────────────── */
     .guardian-layout {
       display: grid;
       grid-template-columns: var(--sidebar-width) 1fr;
       min-height: calc(100vh - var(--header-height));
-      gap: 0;
     }
 
     .guardian-sidebar {
       background-color: var(--color-surface);
       border-right: 1.5px solid var(--color-border);
-      padding: var(--space-6) 0;
+      padding: var(--space-4) 0;
       position: sticky;
       top: var(--header-height);
       height: calc(100vh - var(--header-height));
       overflow-y: auto;
-    }
-
-    .guardian-sidebar__section {
-      padding: var(--space-3) var(--space-5);
     }
 
     .guardian-sidebar__label {
@@ -45,7 +41,7 @@
       letter-spacing: var(--letter-spacing-widest);
       text-transform: uppercase;
       color: var(--color-text-tertiary);
-      padding: var(--space-2) var(--space-5);
+      padding: var(--space-3) var(--space-5);
       margin-top: var(--space-4);
     }
 
@@ -57,22 +53,18 @@
       font-size: var(--font-size-sm);
       font-weight: var(--font-weight-bold);
       color: var(--color-text-secondary);
-      text-decoration: none;
-      border-radius: 0;
-      cursor: pointer;
       background: none;
       border: none;
       width: 100%;
       text-align: left;
+      cursor: pointer;
       transition: background-color var(--transition-base), color var(--transition-base);
     }
-
     .guardian-nav-item:hover,
     .guardian-nav-item.active {
       background-color: var(--color-primary-subtle);
       color: var(--color-primary);
     }
-
     .guardian-nav-item:focus-visible {
       outline: none;
       box-shadow: inset var(--focus-ring);
@@ -83,22 +75,51 @@
       overflow-y: auto;
     }
 
+    /* ── PIN screen ───────────────────────────────────────────────────── */
+    .pin-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-6);
+      min-height: 70vh;
+      text-align: center;
+      padding: var(--space-8);
+    }
+
+    /* ── Modal overlay ────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: var(--z-modal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-box {
+      background: var(--color-surface);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* ── Responsive sidebar ───────────────────────────────────────────── */
     @media (max-width: 768px) {
-      .guardian-layout {
-        grid-template-columns: 1fr;
-      }
+      .guardian-layout { grid-template-columns: 1fr; }
       .guardian-sidebar {
         position: static;
         height: auto;
         border-right: none;
         border-bottom: 1.5px solid var(--color-border);
-        padding: var(--space-4) 0;
+        padding: var(--space-3) 0;
       }
-      .guardian-sidebar__section {
+      .guardian-sidebar .guardian-sidebar__section {
         display: flex;
         flex-wrap: wrap;
         gap: var(--space-2);
-        padding: var(--space-3) var(--space-4);
+        padding: var(--space-2) var(--space-4);
       }
       .guardian-nav-item {
         width: auto;
@@ -108,42 +129,6 @@
       }
       .guardian-sidebar__label { display: none; }
       .guardian-main { padding: var(--space-5); }
-    }
-
-    /* Pin entry screen */
-    .pin-screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-6);
-      min-height: 70vh;
-      text-align: center;
-    }
-
-    .pin-input-group {
-      display: flex;
-      gap: var(--space-3);
-      justify-content: center;
-    }
-
-    .pin-digit {
-      width: 56px;
-      height: 70px;
-      font-size: var(--font-size-2xl);
-      font-weight: var(--font-weight-bold);
-      text-align: center;
-      border: 2px solid var(--color-border);
-      border-radius: var(--radius-base);
-      background-color: var(--color-surface);
-      color: var(--color-text-primary);
-      transition: border-color var(--transition-base), box-shadow var(--transition-base);
-    }
-
-    .pin-digit:focus {
-      border-color: var(--color-primary);
-      box-shadow: var(--focus-ring);
-      outline: none;
     }
   </style>
 </head>
@@ -155,7 +140,6 @@
 <!-- ── Site Header ───────────────────────────────────────────────── -->
 <header class="site-header" role="banner">
   <div class="site-header__inner">
-
     <a href="/" class="logo" aria-label="EchoAid home">
       <div class="logo__mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
@@ -166,116 +150,39 @@
       <span class="logo__wordmark">Echo<span>Aid</span></span>
     </a>
 
-    <nav class="site-header__nav" aria-label="Guardian Mode navigation">
+    <nav class="site-header__nav" aria-label="Header navigation">
       <span class="badge badge-neutral">Guardian Mode</span>
-      <a href="/patient" class="btn btn-ghost btn-sm hide-mobile"
-         aria-label="Switch to Patient Mode">
-        ← Patient Mode
-      </a>
-      <div id="health-indicator"
-           class="flex items-center gap-2"
-           aria-label="Backend status"
-           title="Backend status">
+      <a href="/patient" class="btn btn-ghost btn-sm hide-mobile">← Patient Mode</a>
+      <div id="health-indicator" class="flex items-center gap-2"
+           aria-label="Backend status" title="Backend status">
         <span class="status-dot status-dot--loading" aria-hidden="true"></span>
         <span class="status-label text-xs text-secondary hide-mobile">checking…</span>
       </div>
     </nav>
-
   </div>
 </header>
 
-<!-- ── Main Content ──────────────────────────────────────────────── -->
+<!-- ── App mount point ───────────────────────────────────────────── -->
 <main id="main-content" role="main">
-
-  <!-- Phase 1: PIN entry placeholder -->
-  <div class="container container-sm">
-    <div class="pin-screen" id="guardian-content">
-
-      <div aria-hidden="true" style="font-size:3rem;">⚙️</div>
-
-      <div>
-        <h1 class="text-2xl mb-2">Guardian Mode</h1>
-        <p class="text-secondary">
-          Enter your PIN to manage keywords and preferences.
-        </p>
-      </div>
-
-      <form id="pin-form"
-            aria-label="Guardian PIN entry"
-            autocomplete="off"
-            novalidate>
-
-        <div class="form-group" style="gap: var(--space-4);">
-          <label for="pin-field" class="form-label text-center" id="pin-label">
-            Guardian PIN
-          </label>
-
-          <!-- Single PIN input (Phase 2 will upgrade to individual digit boxes) -->
-          <input type="password"
-                 id="pin-field"
-                 name="pin"
-                 inputmode="numeric"
-                 pattern="[0-9]*"
-                 maxlength="8"
-                 autocomplete="current-password"
-                 aria-labelledby="pin-label"
-                 aria-describedby="pin-hint"
-                 placeholder="Enter PIN"
-                 style="
-                   text-align: center;
-                   font-size: var(--font-size-2xl);
-                   letter-spacing: 0.4em;
-                   max-width: 220px;
-                   margin: 0 auto;
-                 " />
-
-          <p id="pin-hint" class="form-hint text-center">
-            The default PIN is set in your <code>.env</code> file.
-          </p>
-        </div>
-
-        <div id="pin-error"
-             class="form-error justify-center mt-2 hidden"
-             role="alert"
-             aria-live="polite">
-          ✗ Incorrect PIN. Please try again.
-        </div>
-
-        <div class="mt-6 flex justify-center">
-          <button type="submit"
-                  class="btn btn-primary btn-lg"
-                  id="btn-unlock">
-            🔓 Unlock Guardian Mode
-          </button>
-        </div>
-
-      </form>
-
-      <div class="alert alert-info" style="max-width:420px;" role="note">
-        <span aria-hidden="true">🔧</span>
-        <span>
-          <strong>Phase 1 — Foundation.</strong>
-          Full PIN authentication, keyword management, and category editing
-          arrive in Phase 2.
-        </span>
-      </div>
-
+  <div id="guardian-app">
+    <!-- JS renders PIN screen or dashboard here -->
+    <div class="flex items-center justify-center" style="min-height:60vh;">
+      <div class="spinner" aria-label="Loading Guardian Mode…"></div>
     </div>
   </div>
-
 </main>
 
 <!-- ── Footer ────────────────────────────────────────────────────── -->
 <footer class="site-footer" role="contentinfo">
   <div class="site-footer__inner">
     <span>© 2026 EchoAid — Guardian Mode</span>
-    <a href="/" class="text-xs">← Back to Home</a>
+    <a href="/" class="text-xs">← Home</a>
   </div>
 </footer>
 
 <!-- ── Scripts ───────────────────────────────────────────────────── -->
-<script src="/static/js/app.js"></script>
-<script src="/static/js/guardian.js"></script>
+<script src="/static/js/app.js?v=3"></script>
+<script src="/static/js/guardian.js?v=3"></script>
 
 </body>
 </html>

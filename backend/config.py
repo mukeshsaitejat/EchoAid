@@ -1,7 +1,7 @@
 """
 EchoAid configuration.
 
-All runtime settings are read from environment variables.
+All runtime settings are read from environment variables or a .env file.
 Copy .env.example to .env and fill in values before starting the server.
 """
 
@@ -9,8 +9,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application settings resolved from environment variables or .env file."""
-
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -25,26 +23,26 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "sqlite:///./echoaid.db"
 
-    # Guardian (Phase 2)
+    # Guardian auth
     guardian_pin: str = "1234"
     secret_key: str = "change-me-in-production"
+    session_expire_minutes: int = 480
 
-    # AI provider (Phase 4)
-    ai_provider_url: str = ""
-    ai_model: str = "gpt-4o-mini"
+    # AI provider (Groq — OpenAI-compatible)
+    ai_provider_url: str = "https://api.groq.com/openai/v1"
+    ai_model: str = "llama-3.1-8b-instant"
     ai_api_key: str = ""
-    ai_max_tokens: int = 256
+    ai_max_tokens: int = 300
     ai_timeout_seconds: int = 15
 
     @property
     def is_development(self) -> bool:
-        return self.app_env.lower() == "development"
+        return self.app_env.lower() in ("development", "testing")
 
     @property
     def ai_configured(self) -> bool:
-        """True only when the AI provider URL and API key are both set."""
+        """True only when both the URL and API key are set."""
         return bool(self.ai_provider_url and self.ai_api_key)
 
 
-# Module-level singleton — import this throughout the backend.
 settings = Settings()

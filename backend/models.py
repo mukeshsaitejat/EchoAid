@@ -23,7 +23,7 @@ from backend.database import Base
 
 
 def _now() -> datetime.datetime:
-    return datetime.datetime.utcnow()
+    return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
 
 
 class Category(Base):

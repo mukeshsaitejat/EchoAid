@@ -18,80 +18,138 @@
   <link rel="stylesheet" href="/static/css/layout.css" />
 
   <style>
-    /* Patient Mode specific overrides */
-    body { background-color: var(--color-bg); }
-
     .patient-layout {
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto 1fr auto auto;
       min-height: calc(100vh - var(--header-height));
     }
 
+    /* Category toolbar */
     .patient-toolbar {
       background-color: var(--color-surface);
       border-bottom: 1.5px solid var(--color-border);
-      padding: var(--space-4) 0;
+      padding: var(--space-3) 0;
+      position: sticky;
+      top: var(--header-height);
+      z-index: var(--z-raised);
     }
 
+    /* Keyword scroll area */
     .patient-content {
       padding: var(--space-6) 0;
+      overflow-y: auto;
     }
 
+    /* Bottom speech panel */
     .speech-panel {
       background-color: var(--color-surface);
-      border-top: 1.5px solid var(--color-border);
+      border-top: 2px solid var(--color-border);
       padding: var(--space-4) 0;
       position: sticky;
       bottom: 0;
       z-index: var(--z-raised);
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
     }
 
     .speech-display {
-      min-height: 64px;
+      flex: 1;
+      min-height: 60px;
       padding: var(--space-4) var(--space-5);
       background-color: var(--color-bg);
       border: 2px solid var(--color-border);
       border-radius: var(--radius-base);
       font-size: var(--font-size-lg);
-      color: var(--color-text-primary);
       font-family: var(--font-family);
-      flex: 1;
+      color: var(--color-text-primary);
       display: flex;
       align-items: center;
+      line-height: var(--line-height-normal);
     }
-
     .speech-display--empty {
       color: var(--color-text-tertiary);
       font-style: italic;
+      font-size: var(--font-size-base);
     }
 
     .speech-controls {
       display: flex;
       gap: var(--space-3);
       flex-wrap: wrap;
+      align-items: center;
     }
 
-    /* Coming-soon overlay for Phase 1 */
-    .phase-placeholder {
+    /* Preferences panel */
+    .prefs-panel {
+      background-color: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      padding: var(--space-4) 0;
+    }
+    .prefs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+    .pref-row {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: var(--space-6);
-      padding: var(--space-16) var(--space-6);
-      text-align: center;
+      gap: var(--space-3);
+      font-size: var(--font-size-sm);
+    }
+    .pref-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    .pref-row input[type="range"] {
+      flex: 1;
+    }
+
+    /* AI section */
+    .ai-section {
+      background-color: var(--color-primary-subtle);
+      border-top: 2px solid var(--color-border);
+      padding: var(--space-6) 0;
+    }
+    .ai-input-row {
+      display: flex;
+      gap: var(--space-3);
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .ai-input-row input {
+      flex: 1;
+      min-width: 200px;
+      font-size: var(--font-size-base);
+    }
+    .ai-suggestion-text {
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      width: 100%;
+      border: none;
+      background: transparent;
+      resize: vertical;
+      outline: none;
+      line-height: var(--line-height-relaxed);
+    }
+    .ai-suggestion-text:focus {
+      border-bottom: 2px solid var(--color-primary);
+    }
+
+    @media (max-width: 600px) {
+      .speech-display { font-size: var(--font-size-base); }
+      .speech-controls { gap: var(--space-2); }
+      .btn-lg { padding: var(--space-3) var(--space-5); font-size: var(--font-size-base); }
     }
   </style>
 </head>
 <body>
 
-<!-- Screen-reader announcer -->
+<!-- Screen-reader live region -->
 <div id="sr-announcer" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
 
 <!-- ── Site Header ───────────────────────────────────────────────── -->
 <header class="site-header" role="banner">
   <div class="site-header__inner">
-
     <a href="/" class="logo" aria-label="EchoAid home">
       <div class="logo__mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
@@ -104,29 +162,35 @@
 
     <nav class="site-header__nav" aria-label="Patient Mode navigation">
       <span class="badge badge-primary">Patient Mode</span>
+      <button class="btn btn-ghost btn-sm"
+              id="btn-prefs-toggle"
+              aria-expanded="false"
+              aria-controls="prefs-panel">
+        ⚙️ Preferences
+      </button>
       <a href="/guardian" class="btn btn-ghost btn-sm hide-mobile"
          aria-label="Switch to Guardian Mode">
         Guardian ⚙️
       </a>
+      <div id="health-indicator" class="flex items-center gap-2 hide-mobile"
+           aria-label="Backend status" title="Backend status">
+        <span class="status-dot status-dot--loading" aria-hidden="true"></span>
+      </div>
     </nav>
-
   </div>
 </header>
 
-<!-- ── Main Content ──────────────────────────────────────────────── -->
+<!-- ── Main content ──────────────────────────────────────────────── -->
 <main id="main-content" role="main">
   <div class="patient-layout">
 
-    <!-- Category navigation toolbar -->
+    <!-- Category navigation -->
     <div class="patient-toolbar" role="navigation" aria-label="Category filter">
       <div class="container">
-        <div class="pill-tabs" role="tablist" aria-label="Keyword categories" id="category-tabs">
-          <!-- Populated by Phase 3 JS. Placeholder for Phase 1: -->
-          <button class="pill-tab active" role="tab" aria-selected="true" data-category="all">
+        <div class="pill-tabs" role="tablist" aria-label="Keyword categories"
+             id="category-tabs">
+          <button class="pill-tab active" role="tab" aria-selected="true" data-cat="all">
             All
-          </button>
-          <button class="pill-tab" role="tab" aria-selected="false" data-category="urgent">
-            🚨 Urgent
           </button>
         </div>
       </div>
@@ -136,58 +200,24 @@
     <section class="patient-content" aria-labelledby="keywords-heading">
       <div class="container">
         <h2 id="keywords-heading" class="sr-only">Communication Keywords</h2>
-
-        <!-- Phase 1 placeholder -->
-        <div class="phase-placeholder" id="keyword-area">
-          <div class="empty-state__icon" aria-hidden="true">🗣️</div>
-          <h3 class="empty-state__title">Patient Mode</h3>
-          <p class="empty-state__body text-secondary">
-            Your keyword cards will appear here in Phase 3.<br/>
-            Guardian Mode (Phase 2) is where you add and manage keywords.
-          </p>
-          <div class="flex gap-4 flex-wrap justify-center mt-4">
-            <!-- Sample keyword card previews (static, non-functional) -->
-            <div class="keyword-card" style="min-width:140px;" aria-hidden="true">
-              <span class="keyword-card__icon">💧</span>
-              <span class="keyword-card__label">Water</span>
-            </div>
-            <div class="keyword-card" style="min-width:140px;" aria-hidden="true">
-              <span class="keyword-card__icon">😴</span>
-              <span class="keyword-card__label">Tired</span>
-            </div>
-            <div class="keyword-card keyword-card--urgent" style="min-width:140px;" aria-hidden="true">
-              <span class="keyword-card__icon">🆘</span>
-              <span class="keyword-card__label">Help</span>
-            </div>
-            <div class="keyword-card" style="min-width:140px;" aria-hidden="true">
-              <span class="keyword-card__icon">🌡️</span>
-              <span class="keyword-card__label">Pain</span>
-            </div>
-          </div>
-          <div class="alert alert-info mt-6" style="max-width: 480px;" role="note">
-            <span aria-hidden="true">🔧</span>
-            <span>
-              <strong>Phase 1 — Foundation.</strong>
-              These cards are design previews.
-              Full TTS and keyword loading arrive in Phase 3.
-            </span>
+        <div id="keyword-area">
+          <div class="flex items-center justify-center" style="min-height:200px;">
+            <div class="spinner" aria-label="Loading keywords…"></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Speech panel -->
-    <div class="speech-panel" role="region" aria-label="Speech controls">
+    <!-- Speech panel (sticky bottom) -->
+    <div class="speech-panel" role="region" aria-label="Speech controls" id="speech-panel">
       <div class="container">
         <div class="flex gap-4 items-center flex-wrap">
-
           <div class="speech-display speech-display--empty"
                id="speech-display"
                aria-label="Selected message"
                aria-live="polite">
             Select a keyword to see its message here…
           </div>
-
           <div class="speech-controls">
             <button class="btn btn-primary btn-lg"
                     id="btn-speak"
@@ -208,7 +238,6 @@
               🔁 Repeat
             </button>
           </div>
-
         </div>
       </div>
     </div>
@@ -216,9 +245,111 @@
   </div>
 </main>
 
+<!-- ── Preferences panel (below main, collapsible) ───────────────── -->
+<section class="prefs-panel hidden"
+         id="prefs-panel"
+         aria-label="Communication preferences">
+  <div class="container">
+    <h2 class="text-sm font-bold mb-4 tracking-widest uppercase text-secondary">
+      Preferences
+    </h2>
+    <div class="prefs-grid">
+
+      <!-- Display prefs -->
+      <label class="pref-row">
+        <input type="checkbox" id="pref-high-contrast" />
+        <span>High contrast</span>
+      </label>
+      <label class="pref-row">
+        <input type="checkbox" id="pref-large-text" />
+        <span>Large text</span>
+      </label>
+      <label class="pref-row">
+        <input type="checkbox" id="pref-speak-on-select" />
+        <span>Speak on select</span>
+      </label>
+
+      <!-- Speech rate -->
+      <div class="pref-row" style="flex-direction:column;align-items:flex-start;gap:var(--space-1);">
+        <label for="pref-rate" class="text-sm">
+          Speech rate: <strong id="pref-rate-val">1x</strong>
+        </label>
+        <input type="range" id="pref-rate"
+               min="0.5" max="2" step="0.1" value="1"
+               aria-label="Speech rate" />
+      </div>
+
+      <!-- Voice -->
+      <div class="form-group">
+        <label for="pref-voice" class="form-label text-xs">Voice</label>
+        <select id="pref-voice" aria-label="Preferred voice">
+          <option value="">Default voice</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── AI Type & Speak section ───────────────────────────────────── -->
+<section class="ai-section" id="ai-section" aria-labelledby="ai-heading">
+  <div class="container">
+    <h2 id="ai-heading" class="text-lg mb-1">
+      <span aria-hidden="true">✨</span> Type &amp; Speak
+    </h2>
+    <p class="text-secondary text-sm mb-4">
+      Type a few words or fragments and AI will suggest full sentences you can speak.
+    </p>
+
+    <!-- Not configured notice -->
+    <div id="ai-unavailable" class="alert alert-info hidden" role="note">
+      <span aria-hidden="true">ℹ️</span>
+      <span>
+        AI assistance is not configured. Set <code>AI_API_KEY</code> in your
+        <code>.env</code> file to enable this feature.
+        Your saved keywords are fully available without it.
+      </span>
+    </div>
+
+    <!-- Form area -->
+    <div id="ai-form-area">
+      <form id="ai-form" autocomplete="off" novalidate>
+        <div class="ai-input-row mb-4">
+          <div class="form-group flex-1">
+            <label for="ai-input" class="form-label">
+              Word fragments
+              <span class="form-hint" style="display:inline;">(e.g. cold + window + close)</span>
+            </label>
+            <input type="text"
+                   id="ai-input"
+                   placeholder="cold + window + close"
+                   maxlength="500"
+                   aria-describedby="ai-hint" />
+            <p id="ai-hint" class="form-hint">
+              Separate ideas with commas or + signs. AI will formulate sentences for you.
+            </p>
+          </div>
+          <button type="submit" class="btn btn-primary" style="align-self:flex-end;">
+            ✨ Suggest
+          </button>
+        </div>
+      </form>
+      <div id="ai-results" aria-live="polite" aria-label="AI suggestions"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ────────────────────────────────────────────────────── -->
+<footer class="site-footer" role="contentinfo">
+  <div class="site-footer__inner">
+    <span>© 2026 EchoAid</span>
+    <a href="/" class="text-xs">← Home</a>
+  </div>
+</footer>
+
 <!-- ── Scripts ───────────────────────────────────────────────────── -->
-<script src="/static/js/app.js"></script>
-<script src="/static/js/patient.js"></script>
+<script src="/static/js/app.js?v=3"></script>
+<script src="/static/js/patient.js?v=3"></script>
 
 </body>
 </html>

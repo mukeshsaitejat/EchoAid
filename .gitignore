@@ -24,6 +24,7 @@ ENV/
 *.db
 *.sqlite
 *.sqlite3
+test_echoaid.db
 
 # IDE / editor
 .vscode/

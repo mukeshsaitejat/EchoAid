@@ -1,13 +1,4 @@
-/**
- * EchoAid — Shared Application Utilities
- *
- * This module provides helpers used across all pages:
- * - API fetch wrapper
- * - Toast notifications
- * - Health-check indicator
- * - Preference persistence (localStorage)
- */
-
+(function() {
 'use strict';
 
 /* ────────────────────────────────────────────────────────────────────
@@ -51,14 +42,7 @@ async function apiRequest(path, options = {}) {
   return null;
 }
 
-/** GET helper */
-const api = {
-  get:    (path)         => apiRequest(path, { method: 'GET' }),
-  post:   (path, body)   => apiRequest(path, { method: 'POST',   body: JSON.stringify(body) }),
-  put:    (path, body)   => apiRequest(path, { method: 'PUT',    body: JSON.stringify(body) }),
-  patch:  (path, body)   => apiRequest(path, { method: 'PATCH',  body: JSON.stringify(body) }),
-  delete: (path)         => apiRequest(path, { method: 'DELETE' }),
-};
+/** API helpers object (created inline to avoid global scope pollution) */
 
 /* ────────────────────────────────────────────────────────────────────
    TOAST NOTIFICATIONS
@@ -245,7 +229,14 @@ function createElement(tag, props = {}) {
 // Attach to window so non-module scripts can use these utilities.
 window.EchoAid = window.EchoAid || {};
 Object.assign(window.EchoAid, {
-  api,
+  // Create API object inline to avoid global scope pollution
+  api: {
+    get:    (path)         => apiRequest(path, { method: 'GET' }),
+    post:   (path, body)   => apiRequest(path, { method: 'POST',   body: JSON.stringify(body) }),
+    put:    (path, body)   => apiRequest(path, { method: 'PUT',    body: JSON.stringify(body) }),
+    patch:  (path, body)   => apiRequest(path, { method: 'PATCH',  body: JSON.stringify(body) }),
+    delete: (path)         => apiRequest(path, { method: 'DELETE' }),
+  },
   showToast,
   checkHealth,
   loadPrefs,
@@ -258,3 +249,5 @@ Object.assign(window.EchoAid, {
 
 // Apply display preferences immediately to avoid a flash of unstyled content.
 applyDisplayPrefs();
+
+})(); // End of IIFE
